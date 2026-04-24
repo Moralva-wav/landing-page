@@ -152,35 +152,66 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------------------------------------
   const collabForm = document.querySelector(".collab-form");
 
-  if (collabForm) {
+if (collabForm) {
 
-    const collabMsg = document.querySelector(".collab-msg");
+  const collabMsg = document.querySelector(".collab-msg");
+  const submitBtn = collabForm.querySelector('button[type="submit"]');
 
-    collabForm.addEventListener("submit", (e) => {
+  collabForm.addEventListener("submit", async (e) => {
 
-      e.preventDefault();
+    e.preventDefault();
 
-      const name = collabForm.elements["name"]?.value.trim();
-      const email = collabForm.elements["email"]?.value.trim();
+    const name = collabForm.elements["name"]?.value.trim();
+    const email = collabForm.elements["email"]?.value.trim();
 
-      if (!name || !email) {
-
-        if (collabMsg) {
-          collabMsg.textContent = "Please fill in your name and e-mail.";
-        }
-
-        return;
-      }
-
+    if (!name || !email) {
       if (collabMsg) {
-        collabMsg.textContent = "Thanks! I’ll get back to you soon.";
+        collabMsg.textContent = "Please fill in your name and e-mail.";
+      }
+      return;
+    }
+
+    const formData = new FormData(collabForm);
+
+    const originalText = submitBtn.textContent;
+
+    submitBtn.textContent = "Sending...";
+    submitBtn.disabled = true;
+
+    try {
+
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (collabMsg) {
+          collabMsg.textContent = "Message sent successfully ✅";
+        }
+        collabForm.reset();
+      } else {
+        if (collabMsg) {
+          collabMsg.textContent = "Error: " + data.message;
+        }
       }
 
-      collabForm.reset();
+    } catch (error) {
+      if (collabMsg) {
+        collabMsg.textContent = "Something went wrong. Try again.";
+      }
+    } finally {
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }
 
-    });
+  });
 
-  }
+}
+
+
 
 
   // -------------------------------------------------------
