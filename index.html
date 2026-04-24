@@ -192,7 +192,23 @@
         <!-- Breve descripción de géneros en los que me especializo y formas de trabajar -->
 
         <div class="card collab-card">
-          <form class="collab-form" novalidate>
+          <form 
+              class="collab-form" 
+              action="https://api.web3forms.com/submit" 
+              method="POST"
+          >
+
+              <!-- Hidden inputs  -->
+
+             <input type="hidden" name="access_key" value="473f2ef6-748e-4007-bbbe-7ca800b6181b">
+
+            <input type="hidden" name="subject" value="🎧 New Collab Request — MORALVA">
+            <input type="hidden" name="from_name" value="MORALVA Website">
+            <input type="hidden" name="replyto" value="email">
+            <input type="checkbox" name="botcheck" style="display:none;">
+
+            <!-- Normal inputs start here -->
+
             <label>
               <span>Your name or artist name <sup>*</sup></span>
               <input
@@ -233,10 +249,10 @@
             <label>
               <span>Previous works, influences, links, info, etc…</span>
               <textarea
-                name="info"
-                rows="4"
-                placeholder="Share references, demos and what you are looking for…"
-              ></textarea>
+                  name="message"
+                  rows="4"
+                  placeholder="Share references, demos and what you are looking for…"
+            ></textarea>
             </label>
             <div class="collab-actions">
               <button type="submit" class="btn btn-primary full">
@@ -598,7 +614,6 @@
         </article>
 
       </div>
-
 
 
 
