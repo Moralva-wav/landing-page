@@ -123,29 +123,41 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------------------------------------
   const newsletterForms = document.querySelectorAll(".newsletter-form");
 
-  newsletterForms.forEach((form) => {
+newsletterForms.forEach((form) => {
 
-    const msg = form.parentElement.querySelector(".newsletter-msg");
+  const msg = form.parentElement.querySelector(".newsletter-msg");
 
-    form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
 
-      e.preventDefault();
+    e.preventDefault();
 
-      const email = form.elements["email"]?.value.trim();
+    const formData = new FormData(form);
 
-      if (!email) {
-        if (msg) msg.textContent = "Please enter a valid e-mail.";
-        return;
+    if (msg) msg.textContent = "Subscribing...";
+
+    try {
+
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        if (msg) msg.textContent = "You're in. New music & insights soon.";
+        form.reset();
+      } else { 
+        if (msg) msg.textContent = "Something went wrong";
       }
 
-      if (msg) msg.textContent = "Thanks for subscribing! ✉️";
-
-      form.reset();
-
-    });
+    } catch (error) {
+      if (msg) msg.textContent = "Connection error";
+    }
 
   });
 
+});
 
   // -------------------------------------------------------
   // FORMULARIO DE COLABORACIÓN
