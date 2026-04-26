@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   // -------------------------------------------------------
-  // Añade el año actual automáticamente en el footer
+  // FOOTER YEAR
   // -------------------------------------------------------
   const yearSpan = document.getElementById("year");
   if (yearSpan) {
@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // -------------------------------------------------------
-  // MENÚ DE NAVEGACIÓN MÓVIL
+  // MOBILE MENU
   // -------------------------------------------------------
   const navToggle = document.querySelector(".nav-toggle");
   const mobileMenu = document.querySelector(".mobile-menu");
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setOpen(!isOpen);
     });
 
-    mobileLinks.forEach((link) => {
+    mobileLinks.forEach(link => {
       link.addEventListener("click", () => setOpen(false));
     });
 
@@ -36,39 +36,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // -------------------------------------------------------
-  // CAROUSEL: Sección "Upcoming"
+  // HERO CAROUSEL (UPCOMING)
   // -------------------------------------------------------
-  const slides = Array.from(document.querySelectorAll(".upcoming-slide"));
+  const heroSlides = document.querySelectorAll(".upcoming-slide");
 
-  if (slides.length > 0) {
+  if (heroSlides.length > 1) {
 
-    let idx = 0;
+    let index = 0;
 
     const showSlide = (i) => {
-      slides.forEach((s, index) => {
-        s.classList.toggle("is-active", index === i);
+      heroSlides.forEach((slide, idx) => {
+        slide.classList.toggle("is-active", idx === i);
       });
     };
 
-    showSlide(idx);
-
     setInterval(() => {
-      idx = (idx + 1) % slides.length;
-      showSlide(idx);
+      index = (index + 1) % heroSlides.length;
+      showSlide(index);
     }, 3500);
 
   }
 
 
   // -------------------------------------------------------
-  // REPRODUCTOR DE MÚSICA
+  // MUSIC PLAYER
   // -------------------------------------------------------
-  const musicCards = Array.from(document.querySelectorAll(".music-card"));
+  const musicCards = document.querySelectorAll(".music-card");
 
   let currentAudio = null;
   let currentButton = null;
 
-  musicCards.forEach((card) => {
+  musicCards.forEach(card => {
 
     const audio = card.querySelector("audio");
     const btn = card.querySelector(".play-btn");
@@ -77,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btn.addEventListener("click", () => {
 
+      // Stop previous track
       if (currentAudio && currentAudio !== audio) {
         currentAudio.pause();
         if (currentButton) currentButton.textContent = "Play";
@@ -84,11 +83,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (audio.paused) {
 
-        audio.currentTime = 0;
-        audio.play();
+        audio.play().catch(() => {
+          console.warn("Playback blocked by browser");
+        });
 
         btn.textContent = "Stop";
-
         currentAudio = audio;
         currentButton = btn;
 
@@ -96,7 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         audio.pause();
         btn.textContent = "Play";
-
         currentAudio = null;
         currentButton = null;
 
@@ -105,35 +103,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     audio.addEventListener("ended", () => {
-
       btn.textContent = "Play";
-
       if (currentAudio === audio) {
         currentAudio = null;
         currentButton = null;
       }
-
     });
 
   });
 
 
   // -------------------------------------------------------
-  // FORMULARIOS DE NEWSLETTER
+  // HELPER: SAFE FETCH (FOR FORMS)
   // -------------------------------------------------------
-  const newsletterForms = document.querySelectorAll(".newsletter-form");
-
-newsletterForms.forEach((form) => {
-
-  const msg = form.parentElement.querySelector(".newsletter-msg");
-
-  form.addEventListener("submit", async (e) => {
-
-    e.preventDefault();
+  const submitForm = async (form, msgEl, successMessage) => {
 
     const formData = new FormData(form);
 
-    if (msg) msg.textContent = "Subscribing...";
+    if (msgEl) msgEl.textContent = "Sending...";
 
     try {
 
@@ -142,135 +129,117 @@ newsletterForms.forEach((form) => {
         body: formData
       });
 
-      const data = await response.json();
+      let data = null;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("Invalid server response");
+      }
 
       if (response.ok && data.success) {
-        if (msg) msg.textContent = "You're in. New music & insights soon.";
+        if (msgEl) msgEl.textContent = successMessage;
         form.reset();
-      } else { 
-        if (msg) msg.textContent = "Something went wrong";
+      } else {
+        if (msgEl) msgEl.textContent = "Something went wrong.";
       }
 
     } catch (error) {
-      if (msg) msg.textContent = "Connection error";
+      if (msgEl) msgEl.textContent = "Connection error.";
     }
+
+  };
+
+
+  // -------------------------------------------------------
+  // NEWSLETTER FORMS
+  // -------------------------------------------------------
+  const newsletterForms = document.querySelectorAll(".newsletter-form");
+
+  newsletterForms.forEach(form => {
+
+    const msg = form.closest(".newsletter")?.querySelector(".newsletter-msg");
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitForm(form, msg, "You're in. New music & insights soon.");
+    });
 
   });
 
-});
 
   // -------------------------------------------------------
-  // FORMULARIO DE COLABORACIÓN
+  // COLLAB FORM
   // -------------------------------------------------------
   const collabForm = document.querySelector(".collab-form");
 
-if (collabForm) {
+  if (collabForm) {
 
-  const collabMsg = document.querySelector(".collab-msg");
-  const submitBtn = collabForm.querySelector('button[type="submit"]');
+    const msg = document.querySelector(".collab-msg");
+    const btn = collabForm.querySelector('button[type="submit"]');
 
-  collabForm.addEventListener("submit", async (e) => {
+    collabForm.addEventListener("submit", async (e) => {
 
-    e.preventDefault();
+      e.preventDefault();
 
-    const name = collabForm.elements["name"]?.value.trim();
-    const email = collabForm.elements["email"]?.value.trim();
+      const name = collabForm.elements["name"]?.value.trim();
+      const email = collabForm.elements["email"]?.value.trim();
 
-    if (!name || !email) {
-      if (collabMsg) {
-        collabMsg.textContent = "Please fill in your name and e-mail.";
-      }
-      return;
-    }
-
-    const formData = new FormData(collabForm);
-
-    const originalText = submitBtn.textContent;
-
-    submitBtn.textContent = "Sending...";
-    submitBtn.disabled = true;
-
-    try {
-
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (collabMsg) {
-          collabMsg.textContent = "Message sent successfully ✅";
-        }
-        collabForm.reset();
-      } else {
-        if (collabMsg) {
-          collabMsg.textContent = "Error: " + data.message;
-        }
+      if (!name || !email) {
+        if (msg) msg.textContent = "Please fill in your name and e-mail.";
+        return;
       }
 
-    } catch (error) {
-      if (collabMsg) {
-        collabMsg.textContent = "Something went wrong. Try again.";
-      }
-    } finally {
-      submitBtn.textContent = originalText;
-      submitBtn.disabled = false;
-    }
+      const originalText = btn.textContent;
+      btn.textContent = "Sending...";
+      btn.disabled = true;
 
-  });
+      await submitForm(collabForm, msg, "Message sent successfully ✅");
 
-}
+      btn.textContent = originalText;
+      btn.disabled = false;
 
+    });
 
+  }
 
 
   // -------------------------------------------------------
-  // LIVE SECTION CAROUSEL
-  // Auto sliding cards for Live Production
+  // LIVE CAROUSELS
   // -------------------------------------------------------
-
   const liveCarousels = document.querySelectorAll(".live-carousel");
 
-  liveCarousels.forEach((carousel) => {
+  liveCarousels.forEach(carousel => {
 
     const slides = carousel.querySelectorAll(".live-slide");
+    if (slides.length <= 1) return;
 
     let index = 0;
     let interval;
 
     const showSlide = (i) => {
-
       slides.forEach((slide, idx) => {
         slide.classList.toggle("active", idx === i);
       });
-
     };
 
-    const startCarousel = () => {
-
+    const start = () => {
+      stop();
       interval = setInterval(() => {
-
         index = (index + 1) % slides.length;
-
         showSlide(index);
-
       }, 4000);
-
     };
 
-    const stopCarousel = () => {
-
-      clearInterval(interval);
-
+    const stop = () => {
+      if (interval) clearInterval(interval);
     };
 
-    carousel.addEventListener("mouseenter", stopCarousel);
-    carousel.addEventListener("mouseleave", startCarousel);
+    carousel.addEventListener("mouseenter", stop);
+    carousel.addEventListener("mouseleave", start);
 
     showSlide(index);
-    startCarousel();
+    start();
 
   });
 
