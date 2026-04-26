@@ -144,7 +144,7 @@ newsletterForms.forEach((form) => {
 
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok && data.success) {
         if (msg) msg.textContent = "You're in. New music & insights soon.";
         form.reset();
       } else { 
